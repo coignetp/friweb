@@ -1,3 +1,7 @@
 # Data
 data/*
 !stop_words.txt
+
+# Index
+index/*
+!index/.gitkeep

@@ -1,8 +1,7 @@
-from os import listdir
-from os.path import isfile, join
+import os
 
 from nltk.tokenize import word_tokenize
-import collections
+from collections import Counter, OrderedDict
 
 def article_word_tokenize(article: str) -> list:
   if type(article)!= str:
@@ -36,14 +35,14 @@ def remove_stop_words(tokens: list, stop_words: list) -> list:
   return tokens_filtered
 
 
-def count_frequency(tokens: list) -> collections.Counter:
-  return collections.Counter(tokens)
+def count_frequency(tokens: list) -> Counter:
+  return Counter(tokens)
 
 
 def read_data(dirname: str, stop_words: list):
-  filenames = [dirname + '/' + f for f in listdir(dirname) if isfile(join(dirname, f))]
+  filenames = [dirname + '/' + f for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
 
-  vocabulary = collections.Counter()
+  vocabulary = Counter()
   documents = {}
 
   for fname in filenames:
@@ -58,10 +57,64 @@ def read_data(dirname: str, stop_words: list):
 
   return vocabulary, documents
 
+
+def read_everything(dirname: str, stop_words: list):
+  """ Call read_data for all the subdirectories.
+  TODO: refactor """
+  paths = [os.path.join(dirname, str(n)) for n in range(10)]
+
+  vocabulary = Counter()
+  documents = {}
+
+  for p in paths:
+    v, d = read_data(p, stop_words)
+
+    vocabulary = vocabulary + v
+    documents = {**documents, **d}
+
+  return vocabulary, documents
+
+
+def build_inverted_index(collection: dict) -> OrderedDict:
+  # On considère ici que la collection est pré-traitée
+  inverted_index = OrderedDict()
+
+  for document in collection:
+    n=0
+    for term in collection[document]:
+      n = n+1
+      if term in inverted_index.keys():
+        if document in inverted_index[term].keys():
+          inverted_index[term][document][0] = inverted_index[term][document][0] + 1
+          inverted_index[term][document][1].append(n)
+        else:
+          inverted_index[term][document]= [1,[n]]
+      else:
+        inverted_index[term]=OrderedDict()
+        inverted_index[term][document]=[1,[n]]
+                
+  return inverted_index
+
+
+def save_inverted_index(inverted_index: OrderedDict, filename: str) -> None:
+  with open(filename, 'w') as f:
+    for term in inverted_index:
+      f.write(term + "," + str(len(inverted_index[term])))
+      for doc in inverted_index[term]:
+        f.write("\t" + doc + "," + str(inverted_index[term][doc][0]) + ";")
+        for pos in inverted_index[term][doc][1]:
+          f.write(str(pos) + ",")
+      f.write("\n")
+    f.close()
+
 if __name__ == '__main__':
   stop_words = load_stop_word("data/stop_words.txt")
 
-  v, d = read_data("data/pa1-data/1", stop_words)
+  v, d = read_everything("data", stop_words)
+
+  inverted_index = build_inverted_index(d)
+
+  save_inverted_index(inverted_index, "index/simple.index")
 
   print(v.most_common(30))
   print(len(d))
