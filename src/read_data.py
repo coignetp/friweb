@@ -45,6 +45,7 @@ def read_data(dirname: str, stop_words: list):
   vocabulary = Counter()
   documents = {}
 
+  i = 0
   for fname in filenames:
     with open(fname) as file:
       tokens = article_word_tokenize(file.read())
@@ -54,6 +55,11 @@ def read_data(dirname: str, stop_words: list):
 
       vocabulary.update(freq)
       documents[fname] = freq
+
+    i += 1
+    print("Reading progress for {0}: {1:04.1f}%".format(dirname, 100 * i / len(filenames)), flush=True, end='\r')
+
+  print(f"Reading complete for {dirname}")
 
   return vocabulary, documents
 
@@ -79,6 +85,7 @@ def build_inverted_index(collection: dict) -> OrderedDict:
   # On considère ici que la collection est pré-traitée
   inverted_index = OrderedDict()
 
+  i = 0
   for document in collection:
     n=0
     for term in collection[document]:
@@ -92,6 +99,9 @@ def build_inverted_index(collection: dict) -> OrderedDict:
       else:
         inverted_index[term]=OrderedDict()
         inverted_index[term][document]=[1,[n]]
+
+    i += 1
+    print("Building inverted index {0:04.1f}%".format(100 * i / len(collection)), flush=True, end='\r')
                 
   return inverted_index
 
@@ -107,7 +117,8 @@ def save_inverted_index(inverted_index: OrderedDict, filename: str) -> None:
       f.write("\n")
     f.close()
 
-if __name__ == '__main__':
+
+def create_index() -> None:
   stop_words = load_stop_word("data/stop_words.txt")
 
   v, d = read_everything("data", stop_words)
@@ -116,5 +127,10 @@ if __name__ == '__main__':
 
   save_inverted_index(inverted_index, "index/simple.index")
 
+  # TODO: remove
   print(v.most_common(30))
   print(len(d))
+
+
+if __name__ == '__main__':
+  create_index()
