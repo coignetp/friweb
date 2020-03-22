@@ -22,7 +22,7 @@ def on_listbox_select(selection: str, preview: tk.Text) -> None:
 
 
 if __name__ == "__main__":
-  index = load_inverted_index("index/simple.index")
+  inv_index = load_inverted_index("index/simple.index")
 
   window = tk.Tk()
 
@@ -37,19 +37,19 @@ if __name__ == "__main__":
   botFrame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
   searchType = tk.StringVar()
-  typeBinary = tk.Radiobutton(midFrame, text="Binary", variable=searchType, value="binary", justify=tk.LEFT)
-  typeBinary.select()
+  typeBoolean = tk.Radiobutton(midFrame, text="Boolean", variable=searchType, value="boolean", justify=tk.LEFT)
+  typeBoolean.select()
   typeVector = tk.Radiobutton(midFrame, text="Vector", variable=searchType, value="vector", justify=tk.RIGHT)
 
   results = tk.Listbox(botFrame)
   preview = tk.Text(botFrame)
   searchBar = tk.Entry(topFrame)
-  searchButton = tk.Button(topFrame, text="Search", command=lambda: tk_search(searchBar.get(), index, searchType.get(), results))
+  searchButton = tk.Button(topFrame, text="Search", command=lambda: tk_search(searchBar.get(), inv_index, searchType.get(), results))
 
   searchBar.pack(side=tk.LEFT, pady=10, padx=10, expand=True, fill=tk.X)
   searchButton.pack(side=tk.RIGHT, pady=10, padx=10)
 
-  typeBinary.pack()
+  typeBoolean.pack()
   typeVector.pack()
 
   results.pack(side=tk.LEFT,fill=tk.BOTH, pady=10, padx=10, expand=True)

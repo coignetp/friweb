@@ -59,6 +59,13 @@ def read_data(dirname: str, stop_words: list):
     i += 1
     print("Reading progress for {0}: {1:04.1f}%".format(dirname, 100 * i / len(filenames)), flush=True, end='\r')
 
+  # try:
+  #   stud = vocabulary["stud"]
+  #   students = vocabulary["students"]
+  #   print(f"Stud: {stud} // Students: {students}")
+  # except Exception as e:
+  #   print(e)
+
   print(f"Reading complete for {dirname}")
 
   return vocabulary, documents
@@ -72,7 +79,7 @@ def read_everything(dirname: str, stop_words: list):
   vocabulary = Counter()
   documents = {}
 
-  for p in paths:
+  for p in ["data/0"]: # paths:
     v, d = read_data(p, stop_words)
 
     vocabulary = vocabulary + v
