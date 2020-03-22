@@ -117,6 +117,36 @@ def save_inverted_index(inverted_index: OrderedDict, filename: str) -> None:
       f.write("\n")
     f.close()
 
+def convert_list_to_int(liste: list) -> list:
+    new_list = []
+    for i in liste:
+         new_list.append (int(i))
+    return new_list
+
+def load_inverted_index(filename: str) -> OrderedDict:
+  if not os.path.exists(filename):
+    create_index()
+
+  with open(filename, 'r') as f:
+    print("Loading inverted index...")
+    inverted_index = OrderedDict()
+    line = f.readline()
+    while line!="":
+      line = line.rstrip()
+      content = line.split("\t")
+      term = content[0].split(",")[0]
+      postings = content[1:]
+      postings_with_tf_and_pos= OrderedDict()
+      for occurence in postings:
+        content = occurence.split(";")
+        positions = content[1].rstrip(",").split(",")
+        positions=convert_list_to_int(positions)
+        document = content[0].split(",")
+        postings_with_tf_and_pos[document[0]] = [int(document[1]), positions]
+      inverted_index[term] = postings_with_tf_and_pos
+      line = f.readline()
+    print("Loading completed!")
+    return inverted_index
 
 def create_index() -> None:
   stop_words = load_stop_word("data/stop_words.txt")

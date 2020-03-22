@@ -1,11 +1,13 @@
 import tkinter as tk
 from functools import partial
+from collections import OrderedDict
 
+from read_data import load_inverted_index
 from search import search
 
 
-def tk_search(query: str, resultsWidget: tk.Listbox) -> None:
-  found_files = search(query)
+def tk_search(query: str, index: OrderedDict, searchType: str, resultsWidget: tk.Listbox) -> None:
+  found_files = search(query, index, searchType)
 
   resultsWidget.delete(0, tk.END)
   for a_file in found_files:
@@ -20,23 +22,35 @@ def on_listbox_select(selection: str, preview: tk.Text) -> None:
 
 
 if __name__ == "__main__":
+  index = load_inverted_index("index/simple.index")
+
   window = tk.Tk()
 
   window.title("Friweb")
 
   topFrame = tk.Frame(window)
+  midFrame = tk.Frame(window)
   botFrame = tk.Frame(window)
 
   topFrame.pack(side=tk.TOP, fill=tk.X, expand=True)
+  midFrame.pack(side=tk.TOP, fill=tk.X, expand=True)
   botFrame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+  searchType = tk.StringVar()
+  typeBinary = tk.Radiobutton(midFrame, text="Binary", variable=searchType, value="binary", justify=tk.LEFT)
+  typeBinary.select()
+  typeVector = tk.Radiobutton(midFrame, text="Vector", variable=searchType, value="vector", justify=tk.RIGHT)
 
   results = tk.Listbox(botFrame)
   preview = tk.Text(botFrame)
   searchBar = tk.Entry(topFrame)
-  searchButton = tk.Button(topFrame, text="Search", command=lambda: tk_search(searchBar.get(), results))
+  searchButton = tk.Button(topFrame, text="Search", command=lambda: tk_search(searchBar.get(), index, searchType.get(), results))
 
   searchBar.pack(side=tk.LEFT, pady=10, padx=10, expand=True, fill=tk.X)
   searchButton.pack(side=tk.RIGHT, pady=10, padx=10)
+
+  typeBinary.pack()
+  typeVector.pack()
 
   results.pack(side=tk.LEFT,fill=tk.BOTH, pady=10, padx=10, expand=True)
   preview.pack(side=tk.RIGHT,fill=tk.BOTH, pady=10, padx=10, expand=True)

@@ -1,14 +1,10 @@
 import os
 
 from read_data import create_index
+from collections import OrderedDict
 
-
-def search(query: str) -> list:
-  if not os.path.exists('index/simple.index'):
-    print("Creating index..")
-    create_index()
-  
-  print(f"Search for {query}")
+def search(query: str, index: OrderedDict, searchType: str) -> list:
+  print(f"Search for {query} with {searchType} search")
 
   # TODO: do real search
   found_files = [
