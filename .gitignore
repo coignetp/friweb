@@ -5,3 +5,6 @@ data/*
 # Index
 index/*
 !index/.gitkeep
+
+# VSCode
+.vscode
