@@ -63,13 +63,6 @@ def read_data(dirname: str, stop_words: list):
         print("Reading progress for {0}: {1:04.1f}%".format(
             dirname, 100 * i / len(filenames)), flush=True, end='\r')
 
-    # try:
-    #   stud = vocabulary["stud"]
-    #   students = vocabulary["students"]
-    #   print(f"Stud: {stud} // Students: {students}")
-    # except Exception as e:
-    #   print(e)
-
     print(f"Reading complete for {dirname}")
 
     return vocabulary, documents
@@ -92,8 +85,8 @@ def read_everything(dirname: str, stop_words: list):
     return vocabulary, documents
 
 
-def get_stats_document(document):
-    stats = {}
+def get_stats_document(document: Counter) -> OrderedDict:
+    stats = OrderedDict()
     try:
         stats["freq_max"] = document.most_common(1)[0][1]
         stats["unique_terms"] = len(document.items())
@@ -104,8 +97,8 @@ def get_stats_document(document):
     return stats
 
 
-def get_stats_collection(collection):
-    stats = {}
+def get_stats_collection(collection: dict) -> OrderedDict:
+    stats = OrderedDict()
     stats["nb_docs"] = len(collection.keys())
     for doc in collection:
         stats[doc] = get_stats_document(collection[doc])
@@ -204,8 +197,6 @@ def create_index() -> None:
     stats_collection = get_stats_collection(d)
     with open("index/stats_collection.json", "w") as f:
         f.write(json.dumps(stats_collection))
-
-    # print(load_stats_collection("index/stats_collection.json"))
 
 
 if __name__ == '__main__':
