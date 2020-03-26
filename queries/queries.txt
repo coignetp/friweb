@@ -1,0 +1,16 @@
+we are
+queries/output/1.out
+stanford class
+queries/output/2.out
+stanford students
+queries/output/3.out
+very cool
+queries/output/4.out
+the
+queries/output/5.out
+a
+queries/output/6.out
+the the
+queries/output/7.out
+stanford computer science
+queries/output/8.out

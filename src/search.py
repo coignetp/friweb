@@ -1,7 +1,7 @@
 import os
 
 from boolean_search import boolean_search
-from vectorial_search import vectorial_search
+from vector_search import vector_search
 
 from collections import OrderedDict
 
@@ -13,6 +13,6 @@ def search(query: str, inv_index: OrderedDict, stats_collection: OrderedDict, se
         return boolean_search(query, inv_index)
 
     elif searchType == 'vector':
-        return vectorial_search(query, inv_index, stats_collection)
+        return vector_search(query, inv_index, stats_collection)
 
     return []
