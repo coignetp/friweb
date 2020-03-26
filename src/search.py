@@ -1,23 +1,24 @@
 import os
 
-from read_data import create_index
+from read_data import load_inverted_index
 from boolean_search import boolean_search
+from vectorial_search import vectorial_search
 
 from collections import OrderedDict
 
+
 def search(query: str, inv_index: OrderedDict, searchType: str) -> list:
-  print(f"Search for {query} with {searchType} search")
+    print(f"Search for {query} with {searchType} search")
 
-  if searchType == 'boolean':
-    return boolean_search(query, inv_index)
+    if searchType == 'boolean':
+        return boolean_search(query, inv_index)
 
-  elif searchType == 'vector':
-    # TODO: do real search
-    return [
-      "data/0/3dradiology.stanford.edu_",
-      "data/2/foodallergies.stanford.edu_about_us_contact_us.html",
-      "data/2/iis-db.stanford.edu_evnts_4795_flyer.pdf",
-      "data/7/www-project.slac.stanford.edu_ilc_acceldev_injector_ILCPES_index.htm",
-    ]
+    elif searchType == 'vector':
+        return vectorial_search(query, inv_index)
 
-  return []
+    return []
+
+
+# if __name__ == '__main__':
+#     inv_index = load_inverted_index("index/simple.index")
+#     print(search("stanford class", inv_index, "vector"))
