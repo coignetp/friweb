@@ -32,8 +32,8 @@ def pre_processed_query(query: str, inverted_index: OrderedDict) -> list:
     return filtered_query
 
 
-def tf_idf_log(term: str, id: str, inverted_index: OrderedDict, stats_collection: OrderedDict) -> float:
-    tf = inverted_index[term][id][0]
+def tf_idf_log(term: str, id: str, inverted_index: OrderedDict, stats_collection: OrderedDict, stemmer: PorterStemmer) -> float:
+    tf = inverted_index[stemmer.stem(term).upper()][id][0]
     tf_log = 0.5 + 0.5 * tf/stats_collection[id]["freq_max"]
     idf = log(stats_collection["nb_docs"]/len(inverted_index[term].keys()))
     return tf_log*idf
@@ -45,11 +45,13 @@ def vector_search(query: str, inverted_index: OrderedDict, stats_collection: Ord
     norm_query = 0.
     norm_docs = 0.
 
+    stemmer = PorterStemmer()
+
     for term, term_query_weight in query_pre_processed:
         norm_query += term_query_weight*term_query_weight
-        for doc in inverted_index[term]:
+        for doc in inverted_index[stemmer.stem(term).upper()]:
             term_doc_weight = tf_idf_log(
-                term, doc, inverted_index, stats_collection)
+                term, doc, inverted_index, stats_collection, stemmer)
             norm_docs += term_doc_weight*term_doc_weight
             if doc in relevant_docs:
                 relevant_docs[doc] += term_doc_weight * term_query_weight

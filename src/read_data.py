@@ -2,6 +2,7 @@ import os
 import json
 
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer, PorterStemmer
 from collections import Counter, OrderedDict
 
 
@@ -57,7 +58,7 @@ def read_data(dirname: str, stop_words: list):
             freq = count_frequency(tokens)
 
             vocabulary.update(freq)
-            documents[fname] = freq
+            documents[fname[len('data/'):]] = freq
 
         i += 1
         print("Reading progress for {0}: {1:04.1f}%".format(
@@ -67,6 +68,28 @@ def read_data(dirname: str, stop_words: list):
 
     return vocabulary, documents
 
+
+# Lemmatisation
+def collection_lemmatize(segmented_collection: dict) -> dict:
+    lemmatized_collection={}
+    lemmatizer = WordNetLemmatizer() # initialisation d'un lemmatiseur
+    for k,v in segmented_collection.items():
+        stem = lemmatizer.lemmatize(k)
+        if stem not in lemmatized_collection:
+            lemmatized_collection[stem] = 0
+        lemmatized_collection[stem] += v
+    return lemmatized_collection
+
+# Stemming
+def collection_stemming(segmented_collection: dict) -> dict:
+    stemmed_collection={}
+    stemmer = PorterStemmer() # initialisation d'un stemmer
+    for k,v in segmented_collection.items():
+        stem = stemmer.stem(k)
+        if stem not in stemmed_collection:
+            stemmed_collection[stem] = 0
+        stemmed_collection[stem] += v
+    return stemmed_collection
 
 def read_everything(dirname: str, stop_words: list):
     """ Call read_data for all the subdirectories.
@@ -81,6 +104,8 @@ def read_everything(dirname: str, stop_words: list):
 
         vocabulary = vocabulary + v
         documents = {**documents, **d}
+
+    vocabulary = collection_stemming(vocabulary)
 
     return vocabulary, documents
 

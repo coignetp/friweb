@@ -3,6 +3,8 @@ from collections import OrderedDict
 
 from copy import deepcopy
 
+from nltk.stem import PorterStemmer
+
 from read_data import article_word_tokenize, remove_stop_words, load_stop_word
 
 # Binary search
@@ -87,20 +89,18 @@ def order_results(evaluation: OrderedDict) -> list:
 
 
 def boolean_search(query: str, inv_index: OrderedDict) -> list:
-  stop_words = load_stop_word("data/stop_words.txt")
-
   query = query.upper()
   query = transformation_query_to_boolean(query)
   evaluation_stack = []
 
-  # print(f"Boolean query on {query}")
+  stemmer = PorterStemmer()
 
   operators = ['AND', 'OR', 'NOT']
 
   for term in query:
     if term not in operators:
       try:
-        evaluation_stack.append(inv_index[term])
+        evaluation_stack.append(inv_index[stemmer.stem(term).upper()])
       except:
         evaluation_stack.append(None)
     else:
