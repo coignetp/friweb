@@ -17,7 +17,7 @@ inv_index = load_inverted_index("index/simple.index")
 stats_collection = load_stats_collection("index/stats_collection.json")
 
 for query in queries:
-    # result_boolean = search(query, inv_index, stats_collection, "boolean")
+    result_boolean = search(query, inv_index, stats_collection, "boolean")
     result_vector = search(query, inv_index, stats_collection, "vector")
 
     output = []
@@ -29,8 +29,8 @@ for query in queries:
     #     if result.strip("data/") not in output:
     #         print(result, result_vector[result])
 
-    a = len(list(set(output) - set([doc.strip("data/") for doc in result_vector])))
-    b = len(list(set([doc.strip("data/") for doc in result_vector]) - set(output)))
+    a = len(list(set(output) - set([doc for doc in result_vector])))
+    b = len(list(set([doc for doc in result_vector]) - set(output)))
     
     if len(list(result_vector)) != 0 and len(list(output)) != 0:
         print("Requête : " + query)
@@ -40,5 +40,19 @@ for query in queries:
     else:
         print("Requête : " + query)
         print("Modèle : Vectoriel")
+        print("Précision : " + str(0))
+        print("Rappel : " + str(0))
+
+    a = len(list(set(output) - set([doc for doc in result_boolean])))
+    b = len(list(set([doc for doc in result_boolean]) - set(output)))
+    
+    if len(list(result_boolean)) != 0 and len(list(output)) != 0:
+        print("Requête : " + query)
+        print("Modèle : Boolean")
+        print("Précision : " + str((len(list(result_boolean)) - b)/len(list(result_boolean))))
+        print("Rappel : " + str((len(list(result_boolean)) - b)/len(list(output))))
+    else:
+        print("Requête : " + query)
+        print("Modèle : Boolean")
         print("Précision : " + str(0))
         print("Rappel : " + str(0))

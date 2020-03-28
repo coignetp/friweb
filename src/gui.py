@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 from collections import OrderedDict
+import os
 
 from read_data import load_inverted_index, load_stats_collection
 from search import search
@@ -17,7 +18,7 @@ def tk_search(query: str, index: OrderedDict, stats_collection: OrderedDict, sea
 def on_listbox_select(selection: str, preview: tk.Text) -> None:
     preview.delete(1.0, tk.END)
 
-    with open(selection) as file:
+    with open(os.path.join('data', selection)) as file:
         preview.insert(tk.END, file.read())
 
 
