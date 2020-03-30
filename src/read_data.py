@@ -23,7 +23,7 @@ def load_stop_word(filename: str) -> list:
     with open(filename, 'r') as f:
         stop_words = []
         line = f.readline()
-        while line != 'Z\n':
+        while line != 'Z\n' and line:
             if line != '\n':
                 stop_words.append(line.rstrip())
             line = f.readline()
@@ -44,6 +44,7 @@ def remove_stop_words(tokens: list, stop_words: list) -> list:
 
 def count_frequency(tokens: list) -> Counter:
     return Counter(tokens)
+
 
 def read_data(dirname: str, stop_words: list):
     filenames = [dirname + '/' +
@@ -72,6 +73,7 @@ def read_data(dirname: str, stop_words: list):
 
     return vocabulary, documents
 
+
 def get_wordnet_pos(word: str) -> str:
     """Map POS tag to first character lemmatize() accepts"""
     tag = pos_tag([word])[0][1][0].upper()
@@ -83,24 +85,29 @@ def get_wordnet_pos(word: str) -> str:
     return tag_dict.get(tag, wordnet.NOUN)
 
 # Lemmatisation
+
+
 def tokens_lemmatize(tokens: list) -> list:
     lemmatized_tokens = []
-    lemmatizer = WordNetLemmatizer() # initialisation d'un lemmatiseur
+    lemmatizer = WordNetLemmatizer()  # initialisation d'un lemmatiseur
     for t in tokens:
         lemma = lemmatizer.lemmatize(t, get_wordnet_pos(t))
         lemmatized_tokens.append(lemma)
     return lemmatized_tokens
 
 # Stemming
+
+
 def collection_stemming(segmented_collection: dict) -> dict:
-    stemmed_collection={}
-    stemmer = PorterStemmer() # initialisation d'un stemmer
-    for k,v in segmented_collection.items():
+    stemmed_collection = {}
+    stemmer = PorterStemmer()  # initialisation d'un stemmer
+    for k, v in segmented_collection.items():
         stem = stemmer.stem(k)
         if stem not in stemmed_collection:
             stemmed_collection[stem] = 0
         stemmed_collection[stem] += v
     return stemmed_collection
+
 
 def read_everything(dirname: str, stop_words: list):
     """ Call read_data for all the subdirectories.
@@ -115,9 +122,6 @@ def read_everything(dirname: str, stop_words: list):
 
         vocabulary = vocabulary + v
         documents = {**documents, **d}
-
-    # documents = collection_lemmatize(documents)
-    # vocabulary = collection_lemmatize(vocabulary)
 
     return vocabulary, documents
 
@@ -227,8 +231,6 @@ def create_index() -> None:
     stop_words = load_stop_word("data/stop_words.txt")
 
     v, d = read_everything("data", stop_words)
-
-    print(v)
 
     inverted_index = build_inverted_index(d)
     save_inverted_index(inverted_index, "index/simple.index")

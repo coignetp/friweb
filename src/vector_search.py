@@ -8,6 +8,21 @@ from read_data import article_word_tokenize, remove_stop_words, load_stop_word, 
 
 
 def pre_processed_query(query: str, inverted_index: OrderedDict, nbDoc: int) -> list:
+    """
+    Résumé
+    ---
+    Cette fonction transforme la requête en entrée en une liste de tuple (token, poids) traités.
+    On élimine notamment les stop words et on lemmatize les termes.
+    Le poids est calculé par tf-idf.
+
+    Note: Il est possible de donner plus de poids à un mot dans la requête en lui ajoutant "^poids(int)" à la fin (ex: "hello^1000 how are^10 you^100")
+
+    Paramètres
+    ---
+    query: la requête à exécuter
+    inverted_index: l'index inversé de la collection
+    nbDoc: nombre de document dans la collection
+    """
     stop_words = load_stop_word("data/stop_words.txt")
 
     counter_query = Counter()
@@ -37,6 +52,18 @@ def pre_processed_query(query: str, inverted_index: OrderedDict, nbDoc: int) -> 
 
 
 def tf_idf(term: str, id: str, inverted_index: OrderedDict, stats_collection: OrderedDict) -> float:
+    """
+    Résumé
+    ---
+    Cette fonction calcule le tf-dif d'un terme pour un document donné
+
+    Paramètres
+    ---
+    term: le terme duquel on calcul le tf-idf
+    id: ID du document
+    inverted_index: index inversé de la collection
+    stats_collection: statistiques de la collection (i.e: fréquences min, max, mean pour chaque document)
+    """
     tf = inverted_index[term][id][0]
     tf = 0.5 + 0.5 * tf/stats_collection[id]["freq_max"]
     idf = log(stats_collection["nb_docs"]/len(inverted_index[term].keys()))
@@ -44,6 +71,17 @@ def tf_idf(term: str, id: str, inverted_index: OrderedDict, stats_collection: Or
 
 
 def vector_search(query: str, inverted_index: OrderedDict, stats_collection: OrderedDict) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Cette fonction effectue une recherche dans l'index en utilisant un modèle vectoriel
+
+    Paramètres
+    ---
+    query: la requête à exécuter
+    inverted_index: l'index inversé de la collection
+    stats_collection: statistiques de la collection (i.e: fréquences min, max, mean pour chaque document)
+    """
     relevant_docs = {}
     query_pre_processed = pre_processed_query(
         query, inverted_index, stats_collection["nb_docs"])
@@ -68,11 +106,10 @@ def vector_search(query: str, inverted_index: OrderedDict, stats_collection: Ord
     scores = relevant_docs.values()
 
     if scores:
-        s_mean = mean(scores)
-        s_sigma = pstdev(scores)
+        lim = sorted(list(scores), reverse=True)[0] - 0.05
 
         ordered_relevant_docs = OrderedDict(
-            sorted(filter(lambda t: t[1] >= s_mean + 1.5 * s_sigma, relevant_docs.items()), key=lambda t: t[1], reverse=True))
+            sorted(filter(lambda t: t[1] >= lim, relevant_docs.items()), key=lambda t: t[1], reverse=True))
     else:
         ordered_relevant_docs = OrderedDict()
 

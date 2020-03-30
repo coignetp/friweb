@@ -25,34 +25,37 @@ for query in queries:
         output = f.readlines()
         output = [line.strip() for line in output]
 
-    a = len(list(set(output) - set([doc for doc in result_vector])))
-    b = len(list(set([doc for doc in result_vector]) - set(output)))
-    
+    result_vector = [doc for doc in result_vector]
+    # Documents qui sont dans les documents attendus mais pas dans le résultat
+    a = list(set(output) - set(result_vector))
+    # Documents qui sont dans le résultat mais pas dans les documents attendus
+    b = list(set(result_vector) - set(output))
+
     if len(list(result_vector)) != 0 and len(list(output)) != 0:
         print("Requête : " + query)
         print("Modèle : Vectoriel")
-        print("Précision : " + str((len(list(result_vector)) - b)/len(list(result_vector))))
-        print("Rappel : " + str((len(list(result_vector)) - b)/len(list(output))))
+        print("Précision : " +
+              str((len(set(result_vector) - set(b)))/len(result_vector)))
+        print("Rappel : " + str((len(set(result_vector) - set(b)))/len(output)))
     else:
         print("Requête : " + query)
         print("Modèle : Vectoriel")
         print("Précision : " + str(0))
         print("Rappel : " + str(0))
-    
-    print(a, b)
 
-    a = len(list(set(output) - set([doc for doc in result_boolean])))
-    b = len(list(set([doc for doc in result_boolean]) - set(output)))
-    
+    # Documents qui sont dans les documents attendus mais pas dans le résultat
+    a = list(set(output) - set(result_boolean))
+    # Documents qui sont dans le résultat mais pas dans les documents attendus
+    b = list(set(result_boolean) - set(output))
+
     if len(list(result_boolean)) != 0 and len(list(output)) != 0:
         print("Requête : " + query)
         print("Modèle : Boolean")
-        print("Précision : " + str((len(list(result_boolean)) - b)/len(list(result_boolean))))
-        print("Rappel : " + str((len(list(result_boolean)) - b)/len(list(output))))
+        print("Précision : " +
+              str((len(set(result_boolean) - set(b)))/len(result_boolean)))
+        print("Rappel : " + str((len(set(result_boolean) - set(b)))/len(output)))
     else:
         print("Requête : " + query)
         print("Modèle : Boolean")
         print("Précision : " + str(0))
         print("Rappel : " + str(0))
-
-    print(a, b)
