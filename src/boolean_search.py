@@ -3,14 +3,12 @@ from collections import OrderedDict
 
 from copy import deepcopy
 
-from nltk.stem import PorterStemmer
-
-from read_data import article_word_tokenize, remove_stop_words, load_stop_word
+from read_data import article_word_tokenize, remove_stop_words, load_stop_word, tokens_lemmatize
 
 # Binary search
 
 def transformation_query_to_boolean(query: str) -> list:
-  splitted_query = article_word_tokenize(query)
+  splitted_query = tokens_lemmatize(article_word_tokenize(query))
   for operator in ['AND', 'OR', 'NOT']:
     if operator in splitted_query:
       boolean_query = BooleanExpression(query)
@@ -93,14 +91,12 @@ def boolean_search(query: str, inv_index: OrderedDict) -> list:
   query = transformation_query_to_boolean(query)
   evaluation_stack = []
 
-  stemmer = PorterStemmer()
-
   operators = ['AND', 'OR', 'NOT']
 
   for term in query:
     if term not in operators:
       try:
-        evaluation_stack.append(inv_index[stemmer.stem(term).upper()])
+        evaluation_stack.append(inv_index[term.upper()])
       except:
         evaluation_stack.append(None)
     else:

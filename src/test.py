@@ -25,10 +25,6 @@ for query in queries:
         output = f.readlines()
         output = [line.strip() for line in output]
 
-    # for result in result_vector:
-    #     if result.strip("data/") not in output:
-    #         print(result, result_vector[result])
-
     a = len(list(set(output) - set([doc for doc in result_vector])))
     b = len(list(set([doc for doc in result_vector]) - set(output)))
     
@@ -42,6 +38,8 @@ for query in queries:
         print("Modèle : Vectoriel")
         print("Précision : " + str(0))
         print("Rappel : " + str(0))
+    
+    print(a, b)
 
     a = len(list(set(output) - set([doc for doc in result_boolean])))
     b = len(list(set([doc for doc in result_boolean]) - set(output)))
@@ -56,3 +54,5 @@ for query in queries:
         print("Modèle : Boolean")
         print("Précision : " + str(0))
         print("Rappel : " + str(0))
+
+    print(a, b)

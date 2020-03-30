@@ -2,66 +2,78 @@ from math import log, sqrt
 from collections import Counter, OrderedDict
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
-from nltk.stem import PorterStemmer
-from nltk.stem import WordNetLemmatizer
+from statistics import pstdev, mean
 
-from read_data import article_word_tokenize, remove_stop_words, load_stop_word
+from read_data import article_word_tokenize, remove_stop_words, load_stop_word, tokens_lemmatize
 
 
-def pre_processed_query(query: str, inverted_index: OrderedDict) -> list:
+def pre_processed_query(query: str, inverted_index: OrderedDict, nbDoc: int) -> list:
     stop_words = load_stop_word("data/stop_words.txt")
 
     counter_query = Counter()
     tokenized_query = article_word_tokenize(query)
-    norm = 0.
-    for term in tokenized_query:
-        weighted_term = term.split("^")
-        if (weighted_term[0].upper() in inverted_index) and (weighted_term[0] not in stop_words):
-            if(len(weighted_term) == 2):
-                counter_query.update(
-                    {weighted_term[0].upper(): int(weighted_term[1])})
-                norm += int(weighted_term[1])
-            else:
-                counter_query.update({weighted_term[0].upper(): 1})
-                norm += 1
+
+    for term_with_weight in tokenized_query:
+
+        term = term_with_weight.split("^")
+        term[0] = tokens_lemmatize([term[0]])[0].upper()
+
+        if (term[0] in inverted_index) and (term[0] not in stop_words):
+            freq = int(term[1]) if len(term) == 2 else 1
+            counter_query.update({term[0]: freq})
 
     filtered_query = []
-    for term, weight in counter_query.most_common():
-        filtered_query.append((term, weight/norm))
+
+    if counter_query:
+        maxi = counter_query.most_common(1)[0][1]
+
+        for term, freq in counter_query.most_common():
+            tf = 0.5 + 0.5 * freq / maxi
+            idf = log(nbDoc/len(inverted_index[term].keys()))
+            weight = tf*idf
+            filtered_query.append((term, weight))
 
     return filtered_query
 
 
-def tf_idf_log(term: str, id: str, inverted_index: OrderedDict, stats_collection: OrderedDict, stemmer: PorterStemmer) -> float:
-    tf = inverted_index[stemmer.stem(term).upper()][id][0]
-    tf_log = 0.5 + 0.5 * tf/stats_collection[id]["freq_max"]
+def tf_idf(term: str, id: str, inverted_index: OrderedDict, stats_collection: OrderedDict) -> float:
+    tf = inverted_index[term][id][0]
+    tf = 0.5 + 0.5 * tf/stats_collection[id]["freq_max"]
     idf = log(stats_collection["nb_docs"]/len(inverted_index[term].keys()))
-    return tf_log*idf
+    return tf*idf
 
 
 def vector_search(query: str, inverted_index: OrderedDict, stats_collection: OrderedDict) -> OrderedDict:
     relevant_docs = {}
-    query_pre_processed = pre_processed_query(query, inverted_index)
+    query_pre_processed = pre_processed_query(
+        query, inverted_index, stats_collection["nb_docs"])
     norm_query = 0.
-    norm_docs = 0.
-
-    stemmer = PorterStemmer()
+    norm_docs = {}
 
     for term, term_query_weight in query_pre_processed:
         norm_query += term_query_weight*term_query_weight
-        for doc in inverted_index[stemmer.stem(term).upper()]:
-            term_doc_weight = tf_idf_log(
-                term, doc, inverted_index, stats_collection, stemmer)
-            norm_docs += term_doc_weight*term_doc_weight
+        for doc in inverted_index[term]:
+            term_doc_weight = tf_idf(
+                term, doc, inverted_index, stats_collection)
             if doc in relevant_docs:
                 relevant_docs[doc] += term_doc_weight * term_query_weight
+                norm_docs[doc] += term_doc_weight*term_doc_weight
             else:
                 relevant_docs[doc] = term_doc_weight * term_query_weight
+                norm_docs[doc] = term_doc_weight*term_doc_weight
 
     for doc in relevant_docs:
-        relevant_docs[doc] /= (sqrt(norm_docs)*sqrt(norm_query))
+        relevant_docs[doc] /= (sqrt(norm_docs[doc])*sqrt(norm_query))
 
-    ordered_relevant_docs = OrderedDict(
-        sorted(relevant_docs.items(), key=lambda t: t[1], reverse=True))
+    scores = relevant_docs.values()
+
+    if scores:
+        s_mean = mean(scores)
+        s_sigma = pstdev(scores)
+
+        ordered_relevant_docs = OrderedDict(
+            sorted(filter(lambda t: t[1] >= s_mean + 1.5 * s_sigma, relevant_docs.items()), key=lambda t: t[1], reverse=True))
+    else:
+        ordered_relevant_docs = OrderedDict()
 
     return ordered_relevant_docs

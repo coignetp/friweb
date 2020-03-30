@@ -1,8 +1,12 @@
 import os
 import json
+import threading
 
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk import pos_tag
+from nltk.corpus import wordnet
+
 from collections import Counter, OrderedDict
 
 
@@ -41,7 +45,6 @@ def remove_stop_words(tokens: list, stop_words: list) -> list:
 def count_frequency(tokens: list) -> Counter:
     return Counter(tokens)
 
-
 def read_data(dirname: str, stop_words: list):
     filenames = [dirname + '/' +
                  f for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
@@ -54,6 +57,7 @@ def read_data(dirname: str, stop_words: list):
         with open(fname) as file:
             tokens = article_word_tokenize(file.read())
             tokens = remove_stop_words(tokens, stop_words)
+            tokens = tokens_lemmatize(tokens)
 
             freq = count_frequency(tokens)
 
@@ -68,17 +72,24 @@ def read_data(dirname: str, stop_words: list):
 
     return vocabulary, documents
 
+def get_wordnet_pos(word: str) -> str:
+    """Map POS tag to first character lemmatize() accepts"""
+    tag = pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ,
+                "N": wordnet.NOUN,
+                "V": wordnet.VERB,
+                "R": wordnet.ADV}
+
+    return tag_dict.get(tag, wordnet.NOUN)
 
 # Lemmatisation
-def collection_lemmatize(segmented_collection: dict) -> dict:
-    lemmatized_collection={}
+def tokens_lemmatize(tokens: list) -> list:
+    lemmatized_tokens = []
     lemmatizer = WordNetLemmatizer() # initialisation d'un lemmatiseur
-    for k,v in segmented_collection.items():
-        stem = lemmatizer.lemmatize(k)
-        if stem not in lemmatized_collection:
-            lemmatized_collection[stem] = 0
-        lemmatized_collection[stem] += v
-    return lemmatized_collection
+    for t in tokens:
+        lemma = lemmatizer.lemmatize(t, get_wordnet_pos(t))
+        lemmatized_tokens.append(lemma)
+    return lemmatized_tokens
 
 # Stemming
 def collection_stemming(segmented_collection: dict) -> dict:
@@ -105,7 +116,8 @@ def read_everything(dirname: str, stop_words: list):
         vocabulary = vocabulary + v
         documents = {**documents, **d}
 
-    vocabulary = collection_stemming(vocabulary)
+    # documents = collection_lemmatize(documents)
+    # vocabulary = collection_lemmatize(vocabulary)
 
     return vocabulary, documents
 
@@ -214,7 +226,9 @@ def load_stats_collection(filename: str) -> OrderedDict:
 def create_index() -> None:
     stop_words = load_stop_word("data/stop_words.txt")
 
-    _, d = read_everything("data", stop_words)
+    v, d = read_everything("data", stop_words)
+
+    print(v)
 
     inverted_index = build_inverted_index(d)
     save_inverted_index(inverted_index, "index/simple.index")
