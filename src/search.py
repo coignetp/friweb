@@ -7,6 +7,11 @@ from collections import OrderedDict
 
 
 def search(query: str, inv_index: OrderedDict, stats_collection: OrderedDict, searchType: str) -> list:
+    """
+    Résumé
+    ---
+    Cette fonction permet d'effectuer une recherche. Elle est appelée par la GUI.
+    """
     print(f"Search for {query} with {searchType} search")
 
     if searchType == 'boolean':

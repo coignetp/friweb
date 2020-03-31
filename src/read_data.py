@@ -11,6 +11,14 @@ from collections import Counter, OrderedDict
 
 
 def article_word_tokenize(article: str) -> list:
+    """
+    Résumé
+    ---
+    tokenize la string donnée en entrée
+
+    Paramètres
+    ---
+    article: String à tokenizer"""
     if type(article) != str:
         raise Exception("The function takes a string as input data")
     else:
@@ -19,7 +27,16 @@ def article_word_tokenize(article: str) -> list:
 
 
 def load_stop_word(filename: str) -> list:
-    """ Load stop words to remove useless ones """
+    """
+    Résumé
+    ---
+    Charge le fichier de stop words
+
+    Paramètres
+    ---
+    Lien vers le fichier de stop words
+    """
+
     with open(filename, 'r') as f:
         stop_words = []
         line = f.readline()
@@ -32,8 +49,16 @@ def load_stop_word(filename: str) -> list:
 
 
 def remove_stop_words(tokens: list, stop_words: list) -> list:
-    """ Remove the useless words from the collection """
-    # TODO: refactor
+    """
+    Résumé
+    ---
+    Enlève les stop words de la liste de tokens en entrée
+
+    Paramètres
+    ---
+    tokens: liste de tokens
+    stop_words: liste de stop words a enlever de tokens
+    """
     tokens_filtered = []
     for i in tokens:
         i = i.upper()
@@ -43,10 +68,30 @@ def remove_stop_words(tokens: list, stop_words: list) -> list:
 
 
 def count_frequency(tokens: list) -> Counter:
+    """
+    Résumé
+    ---
+    Renvoie un counter du nombre d'occurence de chaque terme dans la liste tokens
+
+    Paramètres
+    ---
+    tokens: liste de tokens à compter
+    """
     return Counter(tokens)
 
 
 def read_data(dirname: str, stop_words: list):
+    """
+    Résumé
+    ---
+    Lit l'ensemble des fichiers dans le dossier dirname et renvoie le vocabulaire et un dictionaire
+    qui à chaque document associe un counter avec la fréquence de chacun des termes du document.
+
+    Paramètres
+    ---
+    dirname: nom du dossier à examiner
+    stop_words: liste des stop words
+    """
     filenames = [dirname + '/' +
                  f for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
 
@@ -75,7 +120,15 @@ def read_data(dirname: str, stop_words: list):
 
 
 def get_wordnet_pos(word: str) -> str:
-    """Map POS tag to first character lemmatize() accepts"""
+    """
+    Résumé
+    ---
+    Déduit la fonction d'un mot dans un texte
+
+    Paramètres
+    ---
+    word: mot dont on veut connaitre la fonction
+    """
     tag = pos_tag([word])[0][1][0].upper()
     tag_dict = {"J": wordnet.ADJ,
                 "N": wordnet.NOUN,
@@ -88,6 +141,15 @@ def get_wordnet_pos(word: str) -> str:
 
 
 def tokens_lemmatize(tokens: list) -> list:
+    """
+    Résumé
+    ---
+    Lemmatize une liste de tokens
+
+    Paramètres
+    ---
+    tokens: liste de tokens à lemmatizer
+    """
     lemmatized_tokens = []
     lemmatizer = WordNetLemmatizer()  # initialisation d'un lemmatiseur
     for t in tokens:
@@ -95,23 +157,18 @@ def tokens_lemmatize(tokens: list) -> list:
         lemmatized_tokens.append(lemma)
     return lemmatized_tokens
 
-# Stemming
-
-
-def collection_stemming(segmented_collection: dict) -> dict:
-    stemmed_collection = {}
-    stemmer = PorterStemmer()  # initialisation d'un stemmer
-    for k, v in segmented_collection.items():
-        stem = stemmer.stem(k)
-        if stem not in stemmed_collection:
-            stemmed_collection[stem] = 0
-        stemmed_collection[stem] += v
-    return stemmed_collection
-
 
 def read_everything(dirname: str, stop_words: list):
-    """ Call read_data for all the subdirectories.
-    TODO: refactor """
+    """
+    Résumé
+    ---
+    Lit l'ensemble des documents de la collection et aggrège les résultats
+
+    Paramètres
+    ---
+    dirname: prefix du dossier contenant la collection
+    stop_words: liste des stop words
+    """
     paths = [os.path.join(dirname, str(n)) for n in range(10)]
 
     vocabulary = Counter()
@@ -127,6 +184,16 @@ def read_everything(dirname: str, stop_words: list):
 
 
 def get_stats_document(document: Counter) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Pour un document donné calcule des statistiques liées à ce document comme le nombre unique de terme, la fréquence maximum
+    d'un terme dans le document ou la fréquence moyenne.
+
+    Paramètres
+    ---
+    document: counter représentant le document
+    """
     stats = OrderedDict()
     try:
         stats["freq_max"] = document.most_common(1)[0][1]
@@ -139,6 +206,16 @@ def get_stats_document(document: Counter) -> OrderedDict:
 
 
 def get_stats_collection(collection: dict) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Pour chaque document de la collection, calcule des statistiques liées à ce document comme le nombre unique de terme, la fréquence maximum
+    d'un terme dans le document ou la fréquence moyenne.
+
+    Paramètres
+    ---
+    collection: dictionnaire de la collection
+    """
     stats = OrderedDict()
     stats["nb_docs"] = len(collection.keys())
     for doc in collection:
@@ -147,6 +224,14 @@ def get_stats_collection(collection: dict) -> OrderedDict:
 
 
 def build_inverted_index(collection: dict) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Construit l'index inversé de la collection
+
+    Paramètres
+    ---
+    collection: dictionnaire de la collection"""
     # On considère ici que la collection est pré-traitée
     inverted_index = OrderedDict()
 
@@ -173,6 +258,16 @@ def build_inverted_index(collection: dict) -> OrderedDict:
 
 
 def save_inverted_index(inverted_index: OrderedDict, filename: str) -> None:
+    """
+    Résumé
+    ---
+    Sauvegarde l'index inversé de la collection pour une utilisation ultérieure
+
+    Paramètres
+    ---
+    inverted_index: l'index inversé de la collection
+    filename: nom du fichier dans lequel on veut enregister l'index inversé
+    """
     with open(filename, 'w') as f:
         for term in inverted_index:
             f.write(term + "," + str(len(inverted_index[term])))
@@ -186,6 +281,15 @@ def save_inverted_index(inverted_index: OrderedDict, filename: str) -> None:
 
 
 def convert_list_to_int(liste: list) -> list:
+    """
+    Résumé
+    ---
+    Transforme chaque terme d'une liste en entier
+
+    Paramètres
+    ---
+    liste: liste à convertir
+    """
     new_list = []
     for i in liste:
         new_list.append(int(i))
@@ -193,6 +297,15 @@ def convert_list_to_int(liste: list) -> list:
 
 
 def load_inverted_index(filename: str) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Lit l'index inversé de la collection depuis un fichier
+
+    Paramètres
+    ---
+    filename: nom du fichier duquel on veut lire l'index inversé
+    """
     if not os.path.exists(filename):
         create_index()
 
@@ -220,6 +333,15 @@ def load_inverted_index(filename: str) -> OrderedDict:
 
 
 def load_stats_collection(filename: str) -> OrderedDict:
+    """
+    Résumé
+    ---
+    Lit les statistiques de la collection depuis un fichier
+
+    Paramètres
+    ---
+    filename: nom du fichier duquel on veut lire les statistiques
+    """
     stats_collection = OrderedDict()
     with open(filename, 'r') as f:
         stats_collection = json.loads(f.read())
@@ -228,9 +350,14 @@ def load_stats_collection(filename: str) -> OrderedDict:
 
 
 def create_index() -> None:
+    """
+    Résumé
+    ---
+    Procédure complète de la création d'un index inversé
+    """
     stop_words = load_stop_word("data/stop_words.txt")
 
-    v, d = read_everything("data", stop_words)
+    _, d = read_everything("data", stop_words)
 
     inverted_index = build_inverted_index(d)
     save_inverted_index(inverted_index, "index/simple.index")

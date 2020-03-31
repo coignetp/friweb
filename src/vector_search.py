@@ -5,6 +5,7 @@ from nltk.tokenize import RegexpTokenizer
 from statistics import pstdev, mean
 
 from read_data import article_word_tokenize, remove_stop_words, load_stop_word, tokens_lemmatize
+import matplotlib.pyplot as plt
 
 
 def pre_processed_query(query: str, inverted_index: OrderedDict, nbDoc: int) -> list:
@@ -103,13 +104,11 @@ def vector_search(query: str, inverted_index: OrderedDict, stats_collection: Ord
     for doc in relevant_docs:
         relevant_docs[doc] /= (sqrt(norm_docs[doc])*sqrt(norm_query))
 
-    scores = relevant_docs.values()
+    scores = list(relevant_docs.values())
 
     if scores:
-        lim = sorted(list(scores), reverse=True)[0] - 0.05
-
         ordered_relevant_docs = OrderedDict(
-            sorted(filter(lambda t: t[1] >= lim, relevant_docs.items()), key=lambda t: t[1], reverse=True))
+            sorted(filter(lambda t: t[1] >= 0.1, relevant_docs.items()), key=lambda t: t[1], reverse=True))
     else:
         ordered_relevant_docs = OrderedDict()
 
