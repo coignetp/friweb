@@ -8,6 +8,18 @@ from read_data import article_word_tokenize, remove_stop_words, load_stop_word, 
 # Binary search
 
 def transformation_query_to_boolean(query: str) -> list:
+  """
+  Résumé
+  ---
+  Transforme une requête standard en requête facilement traitable.
+  'WE AND ARE' -> ['WE', 'ARE', 'AND']
+  Si la requête ne contient pas de mot logique, on ajoute des AND
+  entre chaque mot.
+
+  Paramètres
+  ---
+  query: la requête à transformer
+  """
   splitted_query = tokens_lemmatize(article_word_tokenize(query))
   for operator in ['AND', 'OR', 'NOT']:
     if operator in splitted_query:
@@ -23,6 +35,11 @@ def transformation_query_to_boolean(query: str) -> list:
 
 ## AND
 def merge_and_postings_list(posting_term1: OrderedDict, posting_term2: OrderedDict) -> OrderedDict:
+  """
+  Résumé
+  ---
+  Fusionne les 2 dictionnaires avec un AND logique.
+  """
   result = OrderedDict()
   
   for key in posting_term1.keys():
@@ -34,8 +51,12 @@ def merge_and_postings_list(posting_term1: OrderedDict, posting_term2: OrderedDi
   return result
 
 ## OR
-
 def merge_or_postings_list(posting_term1: OrderedDict, posting_term2: OrderedDict) -> OrderedDict:
+  """
+  Résumé
+  ---
+  Fusionne les 2 dictionnaires avec un OR logique.
+  """
   result = OrderedDict()
 
   for key in posting_term1.keys():
@@ -52,8 +73,12 @@ def merge_or_postings_list(posting_term1: OrderedDict, posting_term2: OrderedDic
 
 
 # AND NOT
-
 def merge_and_not_postings_list(posting_term1: OrderedDict, posting_term2: OrderedDict) -> OrderedDict:
+  """
+  Résumé
+  ---
+  Fusionne les 2 dictionnaires avec un AND NOT logique.
+  """
   result = OrderedDict()
   
   for key in posting_term1.keys():
@@ -67,6 +92,11 @@ def merge_and_not_postings_list(posting_term1: OrderedDict, posting_term2: Order
   return result
 
 def boolean_operator_processing_with_inverted_index(operator: str, posting_term1: OrderedDict, posting_term2: OrderedDict) -> list:
+  """
+  Résumé
+  ---
+  Appelle la fonction relative à operator pour fusionner les 2 dictionnaires.
+  """
   result=[]
   if operator == "AND":
     result.append(merge_and_postings_list(posting_term1,posting_term2))
@@ -78,15 +108,26 @@ def boolean_operator_processing_with_inverted_index(operator: str, posting_term1
 
 
 def order_results(evaluation: OrderedDict) -> list:
+  """
+  Résumé
+  ---
+  Ordonne les résultats par ordre alphabétique.
+  """
   results = list(evaluation.keys())
 
-  # TODO
+  # The only order to have is alphabetical
   results.sort()
   
   return results 
 
 
 def boolean_search(query: str, inv_index: OrderedDict) -> list:
+  """
+  Résumé
+  ---
+  Fonction d'entrée pour la recherche booléenne. Recherche la requête booléenne query
+  dans l'index inverser en paramètre.
+  """
   query = query.upper()
   query = transformation_query_to_boolean(query)
   evaluation_stack = []
@@ -98,6 +139,7 @@ def boolean_search(query: str, inv_index: OrderedDict) -> list:
       try:
         evaluation_stack.append(inv_index[term.upper()])
       except:
+        # If the term is not in the inverted index, just ignore it.
         evaluation_stack.append(None)
     else:
       if term == 'NOT':
